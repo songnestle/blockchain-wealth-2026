@@ -1,0 +1,185 @@
+.ai-prompt-generator {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  padding: 32px;
+  color: white;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.step {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.step.active {
+  background: white;
+  color: #667eea;
+  transform: scale(1.1);
+}
+
+.step.completed {
+  background: #10b981;
+  color: white;
+}
+
+.step-content {
+  text-align: center;
+}
+
+.step-content h3 {
+  font-size: 24px;
+  margin: 0 0 8px 0;
+}
+
+.desc {
+  opacity: 0.9;
+  margin-bottom: 24px;
+}
+
+.prompt-preview {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.prompt-preview h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+}
+
+.prompt-preview pre {
+  font-size: 11px;
+  line-height: 1.6;
+  opacity: 0.9;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.copy-btn {
+  background: white;
+  color: #667eea;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: 24px;
+}
+
+.copy-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.copy-btn.copied {
+  background: #10b981;
+  color: white;
+}
+
+.instructions {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.instructions h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+}
+
+.instructions ol {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.next-btn, .import-btn {
+  background: white;
+  color: #667eea;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.next-btn:hover, .import-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.json-input {
+  width: 100%;
+  height: 300px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  color: white;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  resize: none;
+  margin-bottom: 16px;
+}
+
+.json-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.error {
+  background: #ef4444;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.back-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.import-btn {
+  background: #10b981;
+  color: white;
+}

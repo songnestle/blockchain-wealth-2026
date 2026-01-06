@@ -1,0 +1,36 @@
+.wealth-chart {
+  padding: 20px 0;
+}
+
+.chart-legend {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.dot.p10 {
+  background: #ff6b6b;
+}
+
+.dot.p50 {
+  background: #4ecdc4;
+}
+
+.dot.p90 {
+  background: #95e1d3;
+}
