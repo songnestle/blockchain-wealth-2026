@@ -59,8 +59,8 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1>🔮 2026 区块链年度完整预测报告</h1>
-        <p>财富K线 + 人生K线 双轨融合预测系统</p>
+        <h1>🔮 2026 区块链年度趋势分析报告</h1>
+        <p>财富趋势 + 人生趋势 双轨情景推演系统</p>
       </header>
 
       <div className="mode-selector">
@@ -68,13 +68,13 @@ function App() {
           className={mode === 'integrated' ? 'active' : ''}
           onClick={() => setMode('integrated')}
         >
-          🔮 融合预测模式 (截图+八字)
+          🔮 融合分析模式 (截图+八字)
         </button>
         <button
           className={mode === 'legacy' ? 'active' : ''}
           onClick={() => setMode('legacy')}
         >
-          📈 传统预测模式 (CSV)
+          📈 传统分析模式 (CSV)
         </button>
       </div>
 
@@ -88,7 +88,7 @@ function App() {
                 <IntegratedReport data={prediction} />
 
                 <section className="chart-section">
-                  <KLineChart data={prediction.predictions} title="🧬 2026人生K线预测" />
+                  <KLineChart data={prediction.predictions} title="🧬 2026人生趋势区间图" isProjection={true} />
                 </section>
               </>
             )}
@@ -106,14 +106,14 @@ function App() {
             </section>
 
             <section className="params-section">
-              <h2>⚙️ 预测方式</h2>
+              <h2>⚙️ 分析方式</h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div>
-                  <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>传统算法预测</h3>
+                  <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>传统算法分析</h3>
                   <UserParams onSubmit={handlePredict} loading={loading} />
                 </div>
                 <div>
-                  <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>AI智能预测</h3>
+                  <h3 style={{ fontSize: '16px', marginBottom: '12px' }}>AI智能分析</h3>
                   <AIPromptGenerator
                     transactionData={transactionData}
                     onAIDataImport={setPrediction}
@@ -127,15 +127,15 @@ function App() {
         {prediction && (
           <>
             <section className="chart-section">
-              <WealthChart data={prediction.predictions} />
+              <WealthChart data={prediction.predictions} title="📈 多情景趋势分析" />
             </section>
 
             <section className="chart-section">
-              <KLineChart data={prediction.predictions} title="💰 2026财富K线预测" />
+              <KLineChart data={prediction.predictions} title="💰 2026情景区间推演" isProjection={true} />
             </section>
 
             <section className="analysis-section">
-              <h2>💰 成本分析</h2>
+              <h2>📊 成本结构分析</h2>
               <CostAnalysis data={prediction.cost_analysis} />
             </section>
           </>

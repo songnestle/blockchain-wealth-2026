@@ -2,6 +2,13 @@
   padding: 20px 0;
 }
 
+.chart-title {
+  margin: 0 0 16px 0;
+  color: #1f2937;
+  font-size: 18px;
+  font-weight: 600;
+}
+
 .chart-legend {
   margin-top: 30px;
   display: flex;
@@ -33,4 +40,15 @@
 
 .dot.p90 {
   background: #95e1d3;
+}
+
+.chart-disclaimer {
+  margin-top: 16px;
+  padding: 10px;
+  background: #fef3c7;
+  border-radius: 6px;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 600;
+  border-left: 3px solid #f59e0b;
 }

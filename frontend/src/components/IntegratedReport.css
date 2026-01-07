@@ -311,3 +311,36 @@
   font-weight: 600;
   font-size: 14px;
 }
+
+/* 风险提示区域 */
+.disclaimer-section {
+  background: #fffbeb !important;
+  border: 2px solid #f59e0b !important;
+}
+
+.disclaimer-section h2 {
+  color: #92400e !important;
+  border-bottom-color: #f59e0b !important;
+}
+
+.disclaimer-content {
+  background: #fef3c7;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #f59e0b;
+}
+
+.disclaimer-content p {
+  margin: 0 0 12px 0;
+  color: #78350f;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.disclaimer-content p:last-child {
+  margin-bottom: 0;
+}
+
+.disclaimer-content strong {
+  color: #92400e;
+}
