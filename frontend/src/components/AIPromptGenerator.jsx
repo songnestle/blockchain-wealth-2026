@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { WEALTH_PREDICTION_PROMPT } from '../constants'
+import { AIService, AI_PROVIDERS } from '../services/aiService'
 import './AIPromptGenerator.css'
 
 function AIPromptGenerator({ transactionData, onAIDataImport }) {
@@ -7,6 +8,10 @@ function AIPromptGenerator({ transactionData, onAIDataImport }) {
   const [jsonInput, setJsonInput] = useState('')
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [aiProvider, setAiProvider] = useState(AI_PROVIDERS.GEMINI)
+  const [apiKey, setApiKey] = useState('')
+  const [useAutoGenerate, setUseAutoGenerate] = useState(false)
 
   const generateUserPrompt = () => {
     const summary = transactionData ? `
@@ -104,6 +109,58 @@ function AIPromptGenerator({ transactionData, onAIDataImport }) {
     }
   }
 
+  const handleAutoGenerate = async () => {
+    if (!apiKey.trim()) {
+      setError('请输入 API Key')
+      return
+    }
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const aiService = new AIService(aiProvider, apiKey)
+      const userPrompt = generateUserPrompt()
+      const data = await aiService.generatePrediction(WEALTH_PREDICTION_PROMPT, userPrompt)
+
+      if (!data.chartPoints || !Array.isArray(data.chartPoints)) {
+        throw new Error('数据格式不正确：缺少 chartPoints 数组')
+      }
+
+      if (data.chartPoints.length !== 12) {
+        throw new Error('数据不完整：需要12个月的数据')
+      }
+
+      const prediction = {
+        predictions: {
+          p50: data.chartPoints.map(p => ({ month: p.month, value: p.close })),
+          p10: data.chartPoints.map(p => ({ month: p.month, value: p.low })),
+          p90: data.chartPoints.map(p => ({ month: p.month, value: p.high }))
+        },
+        analysis: {
+          tradingStyle: data.tradingStyle || '未知',
+          riskProfile: data.riskProfile || '未知',
+          profitPattern: data.profitPattern || '未知',
+          marketTiming: data.marketTiming || '未知',
+          recommendation: data.recommendation || '未知',
+          bestMonth: data.bestMonth || '未知',
+          worstMonth: data.worstMonth || '未知'
+        },
+        cost_analysis: {
+          total_fees: 0,
+          avg_fee_per_tx: 0,
+          breakdown: {}
+        }
+      }
+
+      onAIDataImport(prediction)
+    } catch (err) {
+      setError(`AI 生成失败：${err.message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="ai-prompt-generator">
       <div className="step-indicator">
@@ -119,29 +176,76 @@ function AIPromptGenerator({ transactionData, onAIDataImport }) {
           <h3>🤖 AI智能预测</h3>
           <p className="desc">使用AI大模型生成个性化的2026年财富预测</p>
 
-          <div className="prompt-preview">
-            <h4>📝 提示词预览</h4>
-            <pre>{generateUserPrompt().substring(0, 300)}...</pre>
+          <div className="ai-mode-selector">
+            <label>
+              <input
+                type="checkbox"
+                checked={useAutoGenerate}
+                onChange={(e) => setUseAutoGenerate(e.target.checked)}
+              />
+              启用自动生成（需要 API Key）
+            </label>
           </div>
 
-          <button onClick={copyFullPrompt} className={`copy-btn ${copied ? 'copied' : ''}`}>
-            {copied ? '✓ 已复制' : '📋 复制完整提示词'}
-          </button>
+          {useAutoGenerate && (
+            <div className="api-config">
+              <div className="provider-selector">
+                <label>选择 AI 提供商：</label>
+                <select value={aiProvider} onChange={(e) => setAiProvider(e.target.value)}>
+                  <option value={AI_PROVIDERS.GEMINI}>Google Gemini</option>
+                  <option value={AI_PROVIDERS.QWEN}>阿里通义千问</option>
+                </select>
+              </div>
 
-          <div className="instructions">
-            <h4>使用说明</h4>
-            <ol>
-              <li>点击上方按钮复制提示词</li>
-              <li>打开 ChatGPT、Claude 或 Gemini</li>
-              <li>粘贴提示词并发送</li>
-              <li>复制 AI 的 JSON 回复</li>
-              <li>返回这里导入数据</li>
-            </ol>
-          </div>
+              <div className="api-key-input">
+                <label>API Key：</label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder={aiProvider === AI_PROVIDERS.GEMINI ? '输入 Gemini API Key' : '输入阿里云 API Key'}
+                />
+              </div>
 
-          <button onClick={() => setStep(2)} className="next-btn">
-            下一步：导入AI预测 →
-          </button>
+              <button
+                onClick={handleAutoGenerate}
+                className="auto-generate-btn"
+                disabled={loading}
+              >
+                {loading ? '⏳ 生成中...' : '✨ 自动生成预测'}
+              </button>
+
+              {error && <div className="error">{error}</div>}
+            </div>
+          )}
+
+          {!useAutoGenerate && (
+            <>
+              <div className="prompt-preview">
+                <h4>📝 提示词预览</h4>
+                <pre>{generateUserPrompt().substring(0, 300)}...</pre>
+              </div>
+
+              <button onClick={copyFullPrompt} className={`copy-btn ${copied ? 'copied' : ''}`}>
+                {copied ? '✓ 已复制' : '📋 复制完整提示词'}
+              </button>
+
+              <div className="instructions">
+                <h4>使用说明</h4>
+                <ol>
+                  <li>点击上方按钮复制提示词</li>
+                  <li>打开 ChatGPT、Claude 或 Gemini</li>
+                  <li>粘贴提示词并发送</li>
+                  <li>复制 AI 的 JSON 回复</li>
+                  <li>返回这里导入数据</li>
+                </ol>
+              </div>
+
+              <button onClick={() => setStep(2)} className="next-btn">
+                下一步：导入AI预测 →
+              </button>
+            </>
+          )}
         </div>
       )}
 

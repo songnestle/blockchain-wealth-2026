@@ -1,27 +1,52 @@
 import { ComposedChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, LabelList } from 'recharts'
 import './KLineChart.css'
 
-function KLineChart({ data }) {
-  if (!data) return null
+function KLineChart({ data, title = '📊 2026财富K线图' }) {
+  if (!data || !Array.isArray(data)) return null
 
-  const klineData = data.p50.map((item, index) => {
-    const prevValue = index > 0 ? data.p50[index - 1].value : item.value
-    const high = data.p90[index].value
-    const low = data.p10[index].value
-    const close = item.value
-    const open = prevValue
+  // 处理两种数据格式：直接数组 或 {p50, p90, p10} 对象
+  let klineData
 
-    return {
-      month: `${item.month}月`,
-      monthNum: item.month,
-      open,
-      close,
-      high,
-      low,
-      isUp: close >= open,
-      bodyRange: [Math.min(open, close), Math.max(open, close)]
-    }
-  })
+  if (Array.isArray(data)) {
+    // 直接是数组格式（life_kline）
+    klineData = data.map((item, index) => {
+      const prevValue = index > 0 ? data[index - 1].close : item.open
+      return {
+        month: `${item.month}月`,
+        monthNum: item.month,
+        open: item.open || prevValue,
+        close: item.close,
+        high: item.high,
+        low: item.low,
+        isUp: item.close >= (item.open || prevValue),
+        bodyRange: [Math.min(item.open || prevValue, item.close), Math.max(item.open || prevValue, item.close)]
+      }
+    })
+  } else if (data.p50 && Array.isArray(data.p50)) {
+    // 对象格式（p50/p90/p10）
+    klineData = data.p50.map((item, index) => {
+      const prevValue = index > 0 ? data.p50[index - 1].value : item.value
+      const high = data.p90?.[index]?.value || item.value
+      const low = data.p10?.[index]?.value || item.value
+      const close = item.value
+      const open = prevValue
+
+      return {
+        month: `${item.month}月`,
+        monthNum: item.month,
+        open,
+        close,
+        high,
+        low,
+        isUp: close >= open,
+        bodyRange: [Math.min(open, close), Math.max(open, close)]
+      }
+    })
+  } else {
+    return null
+  }
+
+  if (!klineData || klineData.length === 0) return null
 
   const maxHigh = Math.max(...klineData.map(d => d.high))
   const quarterMarks = klineData.filter(d => d.monthNum % 3 === 1)
@@ -79,7 +104,7 @@ function KLineChart({ data }) {
   return (
     <div className="kline-chart">
       <div className="chart-header">
-        <h3>📊 2026财富K线图</h3>
+        <h3>{title}</h3>
         <div className="legend-badges">
           <span className="badge badge-up">涨 ▲</span>
           <span className="badge badge-down">跌 ▼</span>

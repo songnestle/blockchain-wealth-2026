@@ -1,0 +1,313 @@
+.integrated-report {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 100%;
+}
+
+.report-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.report-section h2 {
+  margin: 0 0 16px 0;
+  color: #1f2937;
+  font-size: 1.3rem;
+  border-bottom: 3px solid #6366f1;
+  padding-bottom: 10px;
+}
+
+/* 八字分析 */
+.bazi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.bazi-card {
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+}
+
+.bazi-card h3 {
+  margin: 0 0 10px 0;
+  color: #6366f1;
+  font-size: 14px;
+}
+
+.pillars {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pillar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.year-info {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1f2937;
+  margin: 0;
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.analysis-card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+}
+
+.analysis-card h4 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 16px;
+}
+
+.score {
+  display: inline-block;
+  background: #10b981;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.analysis-card p {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.months-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.months-info h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+}
+
+.month-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.month-tag {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.month-tag.good {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.month-tag.bad {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* 交易分析 */
+.trading-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.trading-card {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 4px solid #6366f1;
+}
+
+.trading-card h4 {
+  margin: 0 0 8px 0;
+  color: #6366f1;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.trading-card p {
+  margin: 0;
+  color: #1f2937;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 融合预测 */
+.alignment-analysis {
+  background: #eef2ff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border-left: 4px solid #6366f1;
+}
+
+.alignment-analysis h3 {
+  margin: 0 0 12px 0;
+  color: #4338ca;
+  font-size: 18px;
+}
+
+.alignment-analysis p {
+  margin: 0;
+  color: #1f2937;
+  line-height: 1.6;
+}
+
+.opportunities, .warnings {
+  margin-bottom: 24px;
+}
+
+.opportunities h3, .warnings h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  color: #1f2937;
+}
+
+.opportunity-card, .warning-card {
+  display: flex;
+  gap: 16px;
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 2px solid #e5e7eb;
+}
+
+.month-badge {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  height: fit-content;
+  min-width: 60px;
+  text-align: center;
+}
+
+.month-badge.warning {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.opportunity-content, .warning-content {
+  flex: 1;
+}
+
+.opportunity-content p, .warning-content p {
+  margin: 0 0 8px 0;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.recommendation {
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #6366f1;
+  margin-top: 12px !important;
+  font-weight: 600;
+  color: #1f2937 !important;
+}
+
+/* 年度总结 */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+}
+
+.summary-card.full-width {
+  grid-column: 1 / -1;
+  background: #eef2ff;
+  border-color: #6366f1;
+}
+
+.summary-card h4 {
+  margin: 0 0 12px 0;
+  color: #6366f1;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.summary-card p {
+  margin: 0;
+  color: #1f2937;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.assets-info, .avoid-info {
+  margin-bottom: 16px;
+}
+
+.assets-info h4, .avoid-info h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #1f2937;
+}
+
+.asset-tags, .period-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.asset-tag {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.period-tag {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}

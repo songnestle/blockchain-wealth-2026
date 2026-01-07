@@ -1,18 +1,20 @@
 .app {
   min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .header {
   background: white;
-  padding: 30px;
+  padding: 20px;
   border-radius: 12px;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .header h1 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   margin-bottom: 10px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
@@ -21,26 +23,61 @@
 
 .header p {
   color: #666;
-  font-size: 1.1rem;
+  font-size: 1rem;
+}
+
+.mode-selector {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.mode-selector button {
+  padding: 12px 24px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #6b7280;
+}
+
+.mode-selector button:hover {
+  border-color: #6366f1;
+  transform: translateY(-2px);
+}
+
+.mode-selector button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
 }
 
 .container {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 20px;
+  max-width: 100%;
+  padding: 0 10px;
 }
 
 section {
   background: white;
-  padding: 30px;
+  padding: 20px;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 section h2 {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   color: #333;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
 }
 
 .status {

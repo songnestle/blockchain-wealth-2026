@@ -2,14 +2,16 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import './WealthChart.css'
 
 function WealthChart({ data }) {
-  if (!data) return null
+  if (!data || !data.p50 || !Array.isArray(data.p50)) return null
+  if (!data.p10 || !Array.isArray(data.p10)) return null
+  if (!data.p90 || !Array.isArray(data.p90)) return null
 
   // 转换数据格式
   const chartData = data.p50.map((item, index) => ({
     month: `${item.month}月`,
-    P10: data.p10[index].value,
+    P10: data.p10[index]?.value || 0,
     P50: item.value,
-    P90: data.p90[index].value
+    P90: data.p90[index]?.value || 0
   }))
 
   return (
