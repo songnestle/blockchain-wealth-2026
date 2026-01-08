@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { SCREENSHOT_ANALYSIS_PROMPT, INTEGRATED_FORTUNE_PROMPT } from '../constants'
+import { SCREENSHOT_ANALYSIS_PROMPT, INTEGRATED_FORTUNE_PROMPT, CSV_ANALYSIS_PROMPT } from '../constants'
 import { extractAndCleanJSON, parseJSON, validateTradingData, validateReportData } from '../utils/jsonParser'
 import { analyzeScreenshotsWithGemini, generateReportWithGemini, GEMINI_MODEL_NAMES } from '../utils/geminiApi'
 import { analyzeScreenshotsWithDeepSeek, generateReportWithDeepSeek } from '../utils/deepseekApi'
@@ -10,8 +10,11 @@ import './IntegratedInput.css'
 
 function IntegratedInput({ onGenerateReport }) {
   const [step, setStep] = useState(1)
+  const [dataInputType, setDataInputType] = useState('screenshot') // 'screenshot' or 'csv'
   const [screenshots, setScreenshots] = useState([])
   const [screenshotFiles, setScreenshotFiles] = useState([]) // 保存原始文件对象
+  const [csvFiles, setCsvFiles] = useState([])
+  const [csvContent, setCsvContent] = useState('')
   const [apiProvider, setApiProvider] = useState(localStorage.getItem('api_provider') || 'gemini')
   const [geminiApiKey, setGeminiApiKey] = useState(localStorage.getItem('gemini_api_key') || '')
   const [geminiModel, setGeminiModel] = useState(localStorage.getItem('gemini_model') || 'flash')
@@ -53,6 +56,27 @@ function IntegratedInput({ onGenerateReport }) {
   const removeScreenshot = (index) => {
     setScreenshots(prev => prev.filter((_, i) => i !== index))
     setScreenshotFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleCsvUpload = (e) => {
+    const files = Array.from(e.target.files)
+    setCsvFiles(files)
+
+    // 读取所有CSV文件内容
+    Promise.all(files.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onload = (e) => resolve({ name: file.name, content: e.target.result })
+        reader.readAsText(file)
+      })
+    })).then(results => {
+      const combinedContent = results.map(r => `=== ${r.name} ===\n${r.content}`).join('\n\n')
+      setCsvContent(combinedContent)
+    })
+  }
+
+  const removeCsvFile = (index) => {
+    setCsvFiles(prev => prev.filter((_, i) => i !== index))
   }
 
   const handleApiProviderChange = (e) => {
@@ -167,6 +191,61 @@ function IntegratedInput({ onGenerateReport }) {
       alert(`✅ AI 自动分析成功！\n数据类型: ${dataType}`)
     } catch (err) {
       console.error('AI 分析失败:', err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAutoAnalyzeCsv = async () => {
+    setError(null)
+    setLoading(true)
+
+    const currentApiKey = apiProvider === 'gemini' ? geminiApiKey :
+                          apiProvider === 'claude' ? claudeApiKey :
+                          apiProvider === 'qwen' ? qwenApiKey : deepseekApiKey
+
+    if (!currentApiKey) {
+      setError(`请先配置 ${apiProvider} API Key`)
+      setLoading(false)
+      return
+    }
+
+    if (!csvContent) {
+      setError('请先上传CSV文件')
+      setLoading(false)
+      return
+    }
+
+    try {
+      console.log(`开始调用 ${apiProvider} API 分析CSV数据...`)
+
+      const prompt = `${CSV_ANALYSIS_PROMPT}\n\n以下是用户上传的CSV数据：\n\n${csvContent.substring(0, 15000)}`
+
+      let responseText
+      if (apiProvider === 'gemini') {
+        responseText = await generateReportWithGemini(prompt, geminiApiKey, geminiModel)
+      } else if (apiProvider === 'claude') {
+        responseText = await generateReportWithClaude(prompt, claudeApiKey, claudeModel)
+      } else if (apiProvider === 'qwen') {
+        responseText = await generateReportWithQwen(prompt, qwenApiKey, qwenModel)
+      } else {
+        responseText = await generateReportWithDeepSeek(prompt, deepseekApiKey)
+      }
+
+      console.log('AI 返回的文本:', responseText)
+
+      const cleanedJson = extractAndCleanJSON(responseText)
+      const data = parseJSON(cleanedJson)
+      const validatedData = validateTradingData(data)
+
+      setExtractedData(validatedData)
+      setError(null)
+
+      const dataType = validatedData.data_type === 'annual_summary' ? '年度摘要' : '详细交易记录'
+      alert(`✅ CSV数据分析成功！\n数据类型: ${dataType}`)
+    } catch (err) {
+      console.error('CSV分析失败:', err)
       setError(err.message)
     } finally {
       setLoading(false)
@@ -467,7 +546,7 @@ function IntegratedInput({ onGenerateReport }) {
       )}
 
       <div className="progress-bar">
-        <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>1. 上传截图</div>
+        <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>1. 上传数据</div>
         <div className={`progress-step ${step >= 2 ? 'active' : ''}`}>2. 输入八字</div>
         <div className={`progress-step ${step >= 3 ? 'active' : ''}`}>3. AI分析</div>
         <div className={`progress-step ${step >= 4 ? 'active' : ''}`}>4. 生成报告</div>
@@ -475,8 +554,23 @@ function IntegratedInput({ onGenerateReport }) {
 
       {step === 1 && (
         <div className="step-content">
-          <h2>📸 上传交易截图</h2>
-          <p className="desc">上传你的交易所账单截图，AI将自动识别交易数据</p>
+          <h2>📊 上传交易数据</h2>
+          <p className="desc">上传截图或CSV文件，AI将自动识别交易数据</p>
+
+          <div className="data-type-selector">
+            <button
+              className={`type-btn ${dataInputType === 'screenshot' ? 'active' : ''}`}
+              onClick={() => setDataInputType('screenshot')}
+            >
+              📸 截图上传
+            </button>
+            <button
+              className={`type-btn ${dataInputType === 'csv' ? 'active' : ''}`}
+              onClick={() => setDataInputType('csv')}
+            >
+              📄 CSV文件
+            </button>
+          </div>
 
           <div className="form-section">
             <h4>🤖 选择 AI 服务商</h4>
@@ -589,77 +683,162 @@ function IntegratedInput({ onGenerateReport }) {
             </div>
           )}
 
-          <div className="screenshot-upload">
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleScreenshotUpload}
-              id="screenshot-input"
-              style={{ display: 'none' }}
-            />
-            <label htmlFor="screenshot-input" className="upload-btn">
-              📷 选择截图 (可多选)
-            </label>
-          </div>
-
-          {screenshots.length > 0 && (
-            <div className="screenshot-preview">
-              <h3>已上传 {screenshots.length} 张截图</h3>
-              <div className="screenshot-grid">
-                {screenshots.map((url, index) => (
-                  <div key={index} className="screenshot-item">
-                    <img src={url} alt={`Screenshot ${index + 1}`} />
-                    <button onClick={() => removeScreenshot(index)} className="remove-btn">×</button>
-                  </div>
-                ))}
+          {dataInputType === 'screenshot' && (
+            <>
+              <div className="screenshot-upload">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleScreenshotUpload}
+                  id="screenshot-input"
+                  style={{ display: 'none' }}
+                />
+                <label htmlFor="screenshot-input" className="upload-btn">
+                  📷 选择截图 (可多选)
+                </label>
               </div>
-            </div>
+
+              {screenshots.length > 0 && (
+                <div className="screenshot-preview">
+                  <h3>已上传 {screenshots.length} 张截图</h3>
+                  <div className="screenshot-grid">
+                    {screenshots.map((url, index) => (
+                      <div key={index} className="screenshot-item">
+                        <img src={url} alt={`Screenshot ${index + 1}`} />
+                        <button onClick={() => removeScreenshot(index)} className="remove-btn">×</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="ai-instructions">
+                <h4>🤖 AI识别步骤</h4>
+                <div className="screenshot-tips">
+                  <p><strong>💡 截图建议：</strong></p>
+                  <ul>
+                    <li>✅ 最佳：详细交易记录（包含日期、资产、金额等）</li>
+                    <li>✅ 可用：年度报告摘要（总盈亏、交易笔数、主要资产）</li>
+                    <li>⚠️ 即使只有摘要数据，系统也能工作</li>
+                  </ul>
+                </div>
+
+                {((apiProvider === 'gemini' && geminiApiKey) || (apiProvider === 'claude' && claudeApiKey) || (apiProvider === 'qwen' && qwenApiKey)) && screenshots.length > 0 && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <button
+                      onClick={handleAutoAnalyzeScreenshots}
+                      className="import-data-btn"
+                      disabled={loading}
+                      style={{ width: '100%', marginBottom: '10px' }}
+                    >
+                      {loading ? '🔄 AI分析中...' : `🤖 使用 ${apiProvider === 'gemini' ? 'Gemini' : apiProvider === 'claude' ? 'Claude' : '千问'} 自动分析截图 (推荐)`}
+                    </button>
+                    <p style={{ fontSize: '13px', color: '#059669', textAlign: 'center' }}>
+                      ✨ 使用{apiProvider === 'gemini' ? 'Gemini' : apiProvider === 'claude' ? 'Claude' : '千问'} API自动提取数据，无需手动复制粘贴
+                    </p>
+                  </div>
+                )}
+
+                <details style={{ marginTop: '16px' }}>
+                  <summary style={{ cursor: 'pointer', fontWeight: 'bold', marginBottom: '12px' }}>
+                    📋 手动模式 (点击展开)
+                  </summary>
+                  <ol>
+                    <li>点击下方按钮复制AI提示词</li>
+                    <li>打开ChatGPT或Claude，上传你的截图</li>
+                    <li>粘贴提示词并发送</li>
+                    <li>复制AI返回的JSON数据</li>
+                    <li>粘贴提示词并发送</li>
+                    <li>复制AI返回的JSON数据</li>
+                    <li>粘贴到下方输入框并导入</li>
+                  </ol>
+                  <button onClick={() => copyPrompt(generatePromptForScreenshots())} className="copy-prompt-btn">
+                    📋 复制AI识别提示词
+                  </button>
+                </details>
+              </div>
+            </>
           )}
 
-          <div className="ai-instructions">
-            <h4>🤖 AI识别步骤</h4>
-            <div className="screenshot-tips">
-              <p><strong>💡 截图建议：</strong></p>
-              <ul>
-                <li>✅ 最佳：详细交易记录（包含日期、资产、金额等）</li>
-                <li>✅ 可用：年度报告摘要（总盈亏、交易笔数、主要资产）</li>
-                <li>⚠️ 即使只有摘要数据，系统也能工作</li>
-              </ul>
-            </div>
-
-            {((apiProvider === 'gemini' && geminiApiKey) || (apiProvider === 'claude' && claudeApiKey) || (apiProvider === 'qwen' && qwenApiKey)) && screenshots.length > 0 && (
-              <div style={{ marginBottom: '20px' }}>
-                <button
-                  onClick={handleAutoAnalyzeScreenshots}
-                  className="import-data-btn"
-                  disabled={loading}
-                  style={{ width: '100%', marginBottom: '10px' }}
-                >
-                  {loading ? '🔄 AI分析中...' : `🤖 使用 ${apiProvider === 'gemini' ? 'Gemini' : apiProvider === 'claude' ? 'Claude' : '千问'} 自动分析截图 (推荐)`}
-                </button>
-                <p style={{ fontSize: '13px', color: '#059669', textAlign: 'center' }}>
-                  ✨ 使用{apiProvider === 'gemini' ? 'Gemini' : apiProvider === 'claude' ? 'Claude' : '千问'} API自动提取数据，无需手动复制粘贴
-                </p>
+          {dataInputType === 'csv' && (
+            <>
+              <div className="csv-upload">
+                <input
+                  type="file"
+                  accept=".csv,.xlsx,.xls,.txt"
+                  multiple
+                  onChange={handleCsvUpload}
+                  id="csv-input"
+                  style={{ display: 'none' }}
+                />
+                <label htmlFor="csv-input" className="upload-btn">
+                  📄 选择CSV/Excel文件 (可多选)
+                </label>
               </div>
-            )}
 
-            <details style={{ marginTop: '16px' }}>
-              <summary style={{ cursor: 'pointer', fontWeight: 'bold', marginBottom: '12px' }}>
-                📋 手动模式 (点击展开)
-              </summary>
-              <ol>
-                <li>点击下方按钮复制AI提示词</li>
-                <li>打开ChatGPT或Claude，上传你的截图</li>
-                <li>粘贴提示词并发送</li>
-                <li>复制AI返回的JSON数据</li>
-                <li>粘贴到下方输入框并导入</li>
-              </ol>
-              <button onClick={() => copyPrompt(generatePromptForScreenshots())} className="copy-prompt-btn">
-                📋 复制AI识别提示词
-              </button>
-            </details>
-          </div>
+              {csvFiles.length > 0 && (
+                <div className="csv-preview">
+                  <h3>已上传 {csvFiles.length} 个文件</h3>
+                  <div className="csv-file-list">
+                    {csvFiles.map((file, index) => (
+                      <div key={index} className="csv-file-item">
+                        <span>📄 {file.name}</span>
+                        <button onClick={() => removeCsvFile(index)} className="remove-btn">×</button>
+                      </div>
+                    ))}
+                  </div>
+                  {csvContent && (
+                    <details style={{ marginTop: '12px' }}>
+                      <summary style={{ cursor: 'pointer', fontSize: '14px', color: '#6b7280' }}>
+                        查看文件内容预览
+                      </summary>
+                      <pre style={{
+                        background: '#f3f4f6',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        maxHeight: '200px',
+                        overflow: 'auto',
+                        marginTop: '8px'
+                      }}>
+                        {csvContent.substring(0, 2000)}...
+                      </pre>
+                    </details>
+                  )}
+                </div>
+              )}
+
+              <div className="ai-instructions">
+                <h4>🤖 CSV数据分析</h4>
+                <div className="screenshot-tips">
+                  <p><strong>💡 支持的文件类型：</strong></p>
+                  <ul>
+                    <li>✅ 账户变动明细 (资金流水)</li>
+                    <li>✅ 交易记录导出 (买卖记录)</li>
+                    <li>✅ 资产快照 (持仓记录)</li>
+                    <li>✅ 盈亏报表 (收益统计)</li>
+                  </ul>
+                </div>
+
+                {((apiProvider === 'gemini' && geminiApiKey) || (apiProvider === 'claude' && claudeApiKey) || (apiProvider === 'qwen' && qwenApiKey) || (apiProvider === 'deepseek' && deepseekApiKey)) && csvFiles.length > 0 && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <button
+                      onClick={handleAutoAnalyzeCsv}
+                      className="import-data-btn"
+                      disabled={loading}
+                      style={{ width: '100%', marginBottom: '10px' }}
+                    >
+                      {loading ? '🔄 AI分析中...' : `🤖 使用 ${apiProvider === 'gemini' ? 'Gemini' : apiProvider === 'claude' ? 'Claude' : apiProvider === 'qwen' ? '千问' : 'DeepSeek'} 自动分析CSV`}
+                    </button>
+                    <p style={{ fontSize: '13px', color: '#059669', textAlign: 'center' }}>
+                      ✨ AI将自动解析CSV数据并提取交易信息
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
           <div className="data-import-section">
             <h4>📥 导入AI提取的交易数据</h4>
